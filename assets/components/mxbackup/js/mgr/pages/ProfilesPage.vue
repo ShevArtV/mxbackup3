@@ -1,11 +1,12 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { Button, Column, DataTable, Tag, useConfirm, useToast } from 'primevue';
+import { Button, Column, DataTable, useConfirm, useToast } from 'primevue';
 import { t } from '../utils/i18n.js';
 import { formatDate } from '../utils/format.js';
 import { ProfileApi, config, errorMessage } from '../api/connector.js';
 import { useProfiles } from '../composables/useProfiles.js';
 import ProfileDialog from '../components/ProfileDialog.vue';
+import BoolMark from '../components/BoolMark.vue';
 
 const toast = useToast();
 const confirm = useConfirm();
@@ -88,30 +89,21 @@ const builtin = (row) => row.name === 'prod' || row.name === 'dev';
       <Column field="mode" :header="t('mxbackup_mode')" style="width: 10rem">
         <template #body="{ data }">{{ t('mxbackup_mode_' + data.mode) }}</template>
       </Column>
-      <Column field="format" :header="t('mxbackup_format')" style="width: 7rem" />
+      <Column field="format" :header="t('mxbackup_format')" style="width: 9rem" />
       <Column :header="t('mxbackup_encryption_short')" style="width: 9rem">
         <template #body="{ data }">
-          <Tag
-            v-if="data.encryption_enabled"
-            :value="t('mxbackup_yes')"
-            severity="info"
-          />
-          <span v-else class="mxb-muted">{{ t('mxbackup_no') }}</span>
+          <BoolMark :value="data.encryption_enabled" />
         </template>
       </Column>
       <Column field="description" :header="t('mxbackup_description')" />
       <Column :header="t('mxbackup_standard_masking_short')" style="width: 11rem">
         <template #body="{ data }">
-          <Tag v-if="data.standard_masking" :value="t('mxbackup_yes')" severity="success" />
-          <span v-else class="mxb-muted">{{ t('mxbackup_no') }}</span>
+          <BoolMark :value="data.standard_masking" />
         </template>
       </Column>
       <Column :header="t('mxbackup_active')" style="width: 8rem">
         <template #body="{ data }">
-          <Tag
-            :value="data.active ? t('mxbackup_yes') : t('mxbackup_no')"
-            :severity="data.active ? 'success' : 'secondary'"
-          />
+          <BoolMark :value="data.active" />
         </template>
       </Column>
       <Column field="editedon" :header="t('mxbackup_edited')" style="width: 12rem">
