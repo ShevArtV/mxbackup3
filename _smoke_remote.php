@@ -81,9 +81,12 @@ foreach ($processors as $processor => $properties) {
         if (!$response) {
             throw new RuntimeException('пустой ответ процессора');
         }
-        $body = json_decode($response->getResponse(), true);
+        // runProcessor отдаёт либо JSON-строку, либо уже разобранный массив —
+        // зависит от того, как процессор сформировал ответ.
+        $raw = $response->getResponse();
+        $body = is_array($raw) ? $raw : json_decode((string) $raw, true);
         if (!is_array($body)) {
-            throw new RuntimeException('ответ не JSON: ' . substr((string) $response->getResponse(), 0, 120));
+            throw new RuntimeException('ответ не JSON: ' . substr((string) $raw, 0, 120));
         }
         if (array_key_exists('success', $body) && !$body['success']) {
             throw new RuntimeException('success=false: ' . ($body['message'] ?: 'без сообщения'));

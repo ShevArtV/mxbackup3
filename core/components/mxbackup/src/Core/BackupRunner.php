@@ -23,7 +23,10 @@ use RuntimeException;
 
 final class BackupRunner
 {
-    const VERSION = '1.2.1-rc';
+    // Единственная строка, которой ядро линии MODX 3 отличается от линии MODX 2:
+    // версия попадает в manifest архива, а нумерация у линий разная
+    // (мажор означает платформу).
+    const VERSION = '2.0.0-beta';
 
     private $platform;
     private $storage;
