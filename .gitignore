@@ -1,0 +1,21 @@
+# Собранные транспортные пакеты — не храним в git
+/core/packages/
+# Зависимости и артефакты инструментов
+/vendor/
+/composer.lock
+node_modules/
+/.idea/
+/.vscode/
+/.codegraph/
+/.opencode/
+/.playwright-mcp/
+/.phpunit.result.cache
+**/.phpunit.cache/
+.php-cs-fixer.cache
+*.log
+*.key
+.DS_Store
+
+# Конфигурация и архивы конкретного сайта не входят в пакет.
+/core/config/mxbackup.php
+/backups/

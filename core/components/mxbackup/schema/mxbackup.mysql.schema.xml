@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model package="MxBackup\Model" baseClass="xPDO\Om\xPDOObject" platform="mysql" defaultEngine="InnoDB" version="3.0">
+    <object class="MxBackupRun" table="mxbackup_run" extends="xPDO\Om\xPDOSimpleObject">
+        <field key="profile" dbtype="varchar" precision="100" phptype="string" null="false" default="" index="index"/>
+        <field key="mode" dbtype="varchar" precision="20" phptype="string" null="false" default="prod" index="index"/>
+        <field key="status" dbtype="varchar" precision="20" phptype="string" null="false" default="running" index="index"/>
+        <field key="storage_path" dbtype="text" phptype="string" null="true"/>
+        <field key="archive_path" dbtype="text" phptype="string" null="true"/>
+        <field key="archive_size" dbtype="integer" precision="20" attributes="unsigned" phptype="integer" null="false" default="0"/>
+        <field key="archive_checksum" dbtype="char" precision="64" phptype="string" null="false" default=""/>
+        <field key="manifest_json" dbtype="mediumtext" phptype="json" null="true"/>
+        <field key="report_json" dbtype="mediumtext" phptype="json" null="true"/>
+        <field key="email_sent" dbtype="tinyint" precision="1" attributes="unsigned" phptype="boolean" null="false" default="0"/>
+        <field key="error" dbtype="mediumtext" phptype="string" null="true"/>
+        <field key="startedon" dbtype="integer" precision="20" attributes="unsigned" phptype="integer" null="false" default="0" index="index"/>
+        <field key="completedon" dbtype="integer" precision="20" attributes="unsigned" phptype="integer" null="false" default="0"/>
+
+        <index alias="profile" name="profile" primary="false" unique="false" type="BTREE">
+            <column key="profile" length="" collation="A" null="false"/>
+        </index>
+        <index alias="status" name="status" primary="false" unique="false" type="BTREE">
+            <column key="status" length="" collation="A" null="false"/>
+        </index>
+        <index alias="startedon" name="startedon" primary="false" unique="false" type="BTREE">
+            <column key="startedon" length="" collation="A" null="false"/>
+        </index>
+    </object>
+</model>

@@ -1,0 +1,318 @@
+/*
+ * Стили CMP mxBackup. Тема PrimeVue (Aura) приходит из VueTools и уже
+ * префиксована .vueApp; здесь только раскладка страницы и мелкая типографика.
+ * Цвета берём из переменных темы, чтобы не разъезжаться с админкой.
+ */
+
+.mxb {
+    --mxb-gap: 1rem;
+    --mxb-gap-lg: 1.5rem;
+    padding: 0 0 2rem;
+    color: var(--p-text-color);
+    font-size: 0.875rem;
+}
+
+/* Шапка: заголовок и панель запуска. */
+.mxb-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mxb-gap-lg);
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: var(--mxb-gap-lg) 0 var(--mxb-gap);
+}
+
+.mxb-head__title h1 {
+    margin: 0 0 0.25rem;
+    font-size: 1.375rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.mxb-head__title p {
+    max-width: 68ch;
+    margin: 0;
+    color: var(--p-text-muted-color);
+    line-height: 1.5;
+}
+
+.mxb-launch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.mxb-launch__profile {
+    min-width: 11rem;
+}
+
+.mxb-tabs {
+    margin-top: var(--mxb-gap);
+}
+
+.mxb-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mxb-gap);
+    padding-top: var(--mxb-gap);
+}
+
+/* Панель фильтров над таблицей. */
+.mxb-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mxb-gap);
+    align-items: flex-end;
+}
+
+.mxb-filters__actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.mxb-search {
+    min-width: 16rem;
+}
+
+.mxb-search input {
+    width: 100%;
+}
+
+.mxb-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mxb-gap);
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mxb-toolbar__hint,
+.mxb-hint {
+    margin: 0;
+    color: var(--p-text-muted-color);
+}
+
+.mxb-rowactions {
+    display: flex;
+    gap: 0.125rem;
+    justify-content: flex-end;
+}
+
+.mxb-empty {
+    margin: 0;
+    padding: 1.5rem 0;
+    color: var(--p-text-muted-color);
+    text-align: center;
+}
+
+.mxb-muted {
+    color: var(--p-text-muted-color);
+}
+
+.mxb-strong {
+    font-weight: 600;
+}
+
+.mxb-mono,
+.mxb code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.8125rem;
+    overflow-wrap: anywhere;
+}
+
+/* Формы диалогов и настроек. */
+.mxb-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mxb-gap);
+    padding-top: 0.25rem;
+}
+
+.mxb-form--settings {
+    max-width: 56rem;
+}
+
+.mxb-form__error,
+.mxb-form > .p-message {
+    flex: 1 0 100%;
+}
+
+.mxb-field {
+    display: flex;
+    flex: 1 0 100%;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.mxb-field--half {
+    flex: 1 1 14rem;
+}
+
+.mxb-field--inline {
+    flex: 0 1 auto;
+    min-width: 12rem;
+}
+
+.mxb-field label,
+.mxb-check label {
+    font-weight: 500;
+}
+
+.mxb-field small,
+.mxb-field__hint {
+    color: var(--p-text-muted-color);
+    line-height: 1.45;
+}
+
+.mxb-field__hint {
+    flex: 1 0 100%;
+    margin: -0.5rem 0 0;
+}
+
+.mxb-field input,
+.mxb-field textarea,
+.mxb-field .p-select,
+.mxb-field .p-password {
+    width: 100%;
+}
+
+.mxb-select--wide {
+    min-width: 20rem;
+}
+
+.mxb-check {
+    display: flex;
+    flex: 1 0 100%;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.mxb-fieldset {
+    display: flex;
+    flex: 1 0 100%;
+    flex-wrap: wrap;
+    gap: var(--mxb-gap);
+    margin: 0;
+    padding: var(--mxb-gap);
+    border: 1px solid var(--p-content-border-color);
+    border-radius: var(--p-content-border-radius);
+}
+
+.mxb-fieldset legend {
+    padding: 0 0.5rem;
+    font-weight: 600;
+}
+
+.mxb-form__actions {
+    display: flex;
+    flex: 1 0 100%;
+    justify-content: flex-end;
+}
+
+.mxb-target {
+    flex: 1 0 100%;
+    margin: 0;
+}
+
+/* Отчёт о запуске: цифры и списки. */
+.mxb-report {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: var(--mxb-gap);
+    border: 1px solid var(--p-content-border-color);
+    border-radius: var(--p-content-border-radius);
+    background: var(--p-content-background);
+}
+
+.mxb-report__head {
+    display: flex;
+    gap: var(--mxb-gap);
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mxb-report__head h2 {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.mxb-figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.mxb-figures dt {
+    color: var(--p-text-muted-color);
+}
+
+.mxb-figures dd {
+    margin: 0.125rem 0 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.mxb-report__archive,
+.mxb-report__list {
+    margin: 0;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.mxb-report__archive span,
+.mxb-report__list span {
+    font-weight: 600;
+}
+
+.mxb-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mxb-gap);
+}
+
+.mxb-facts {
+    display: grid;
+    grid-template-columns: minmax(8rem, max-content) 1fr;
+    gap: 0.375rem 1rem;
+    margin: 0;
+}
+
+.mxb-facts dt {
+    color: var(--p-text-muted-color);
+}
+
+.mxb-facts dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.mxb-lastrun {
+    margin-top: var(--mxb-gap);
+}
+
+@media (max-width: 48rem) {
+    .mxb-head,
+    .mxb-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mxb-filters__actions {
+        margin-left: 0;
+    }
+
+    .mxb-launch__profile,
+    .mxb-search {
+        min-width: 0;
+        width: 100%;
+    }
+}

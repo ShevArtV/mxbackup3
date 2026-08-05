@@ -1,0 +1,18 @@
+tests/
+node_modules/
+composer.lock
+phpunit.xml
+phpstan.neon
+.php-cs-fixer.php
+# Исходники фронта в transport не нужны: едет только собранный vue-dist.
+js/mgr/api/
+js/mgr/pages/
+js/mgr/components/
+js/mgr/composables/
+js/mgr/utils/
+js/mgr/styles/
+js/mgr/main-mxbackup.js
+js/mgr/App.vue
+package.json
+package-lock.json
+vite.config.js
