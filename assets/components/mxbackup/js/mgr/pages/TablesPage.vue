@@ -29,8 +29,12 @@ const modes = () => [
 ];
 
 onMounted(async () => {
-  await loadProfiles();
-  profile.value = defaultProfile();
+  try {
+    await loadProfiles();
+    profile.value = defaultProfile();
+  } catch (e) {
+    toast.add({ severity: 'error', summary: t('mxbackup_error'), detail: errorMessage(e), life: 12000 });
+  }
 });
 
 watch(profile, () => {

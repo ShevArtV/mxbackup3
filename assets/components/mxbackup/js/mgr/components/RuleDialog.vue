@@ -115,7 +115,8 @@ async function save() {
 
       <div class="mxb-field mxb-field--half">
         <label for="mxb-rule-priority">{{ t('mxbackup_priority') }}</label>
-        <InputNumber id="mxb-rule-priority" v-model="form.priority" :min="0" :max="9999" show-buttons fluid />
+        <InputNumber
+            input-id="mxb-rule-priority" v-model="form.priority" :min="0" :max="9999" show-buttons fluid />
       </div>
     </div>
 

@@ -11,7 +11,7 @@ use MxBackup\Processors\Mgr\Base;
  */
 class Create extends Base
 {
-    protected $permission = 'mxbackup_restore';
+    public $permission = 'mxbackup_restore';
 
     public function process()
     {

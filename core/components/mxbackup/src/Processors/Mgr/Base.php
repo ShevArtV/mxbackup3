@@ -14,8 +14,16 @@ use MxBackup\Service;
  */
 abstract class Base extends Processor
 {
-    /** @var string Право MODX, без которого процессор не выполняется. */
-    protected $permission = 'mxbackup_view';
+    /**
+     * Право MODX, без которого процессор не выполняется.
+     *
+     * ⚠️ Только public: в базовом Processor свойство объявлено публичным, и
+     * сужение видимости — фатал ещё до выполнения (PHP роняет загрузку класса,
+     * коннектор отдаёт HTML вместо JSON).
+     *
+     * @var string
+     */
+    public $permission = 'mxbackup_view';
 
     public function checkPermissions()
     {

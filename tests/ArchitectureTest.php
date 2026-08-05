@@ -64,6 +64,31 @@ final class ArchitectureTest extends TestCase
     }
 
     /**
+     * В базовом `MODX\Revolution\Processors\Processor` свойство `$permission`
+     * объявлено публичным. Сужение видимости в наследнике — фатал ещё до
+     * выполнения: коннектор отдаёт HTML вместо JSON, а грид молча пустеет.
+     */
+    public function testProcessorsDoNotNarrowPermissionVisibility()
+    {
+        $root = dirname(__DIR__) . '/core/components/mxbackup/src/Processors';
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS));
+        $checked = 0;
+
+        foreach ($iterator as $file) {
+            if ($file->getExtension() !== 'php') continue;
+            $source = file_get_contents($file->getPathname());
+            $checked++;
+            self::assertDoesNotMatchRegularExpression(
+                '/(?:protected|private)\s+\$permission\b/',
+                $source,
+                $file->getPathname()
+            );
+        }
+
+        self::assertGreaterThan(0, $checked);
+    }
+
+    /**
      * Конвенция линии MODX 3: общий стек берётся из Import Map пакета VueTools,
      * свой Vue/PrimeVue в бандл не попадает.
      */

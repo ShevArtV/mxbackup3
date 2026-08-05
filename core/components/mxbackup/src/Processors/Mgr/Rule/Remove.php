@@ -6,7 +6,7 @@ use MxBackup\Processors\Mgr\Base;
 
 class Remove extends Base
 {
-    protected $permission = 'mxbackup_manage';
+    public $permission = 'mxbackup_manage';
 
     public function process()
     {

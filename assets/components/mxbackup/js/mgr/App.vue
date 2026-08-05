@@ -24,8 +24,17 @@ const historyRef = ref(null);
 const activeTab = ref('profiles');
 
 onMounted(async () => {
-  await loadProfiles();
-  runProfile.value = defaultProfile();
+  try {
+    await loadProfiles();
+    runProfile.value = defaultProfile();
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: t('mxbackup_error'),
+      detail: errorMessage(e, t('mxbackup_error')),
+      life: 12000,
+    });
+  }
 });
 
 async function run(dryRun) {

@@ -15,7 +15,15 @@ const { profiles, loading, load } = useProfiles();
 
 const dialog = ref({ open: false, profile: null });
 
-onMounted(() => load());
+onMounted(() => reload());
+
+async function reload(force = false) {
+  try {
+    await load(force);
+  } catch (e) {
+    toast.add({ severity: 'error', summary: t('mxbackup_error'), detail: errorMessage(e), life: 12000 });
+  }
+}
 
 function add() {
   dialog.value = { open: true, profile: null };
@@ -37,7 +45,7 @@ function remove(row) {
       try {
         await ProfileApi.remove(row.id);
         toast.add({ severity: 'success', summary: t('mxbackup_profiles'), detail: t('mxbackup_profile_removed'), life: 5000 });
-        await load(true);
+        await reload(true);
       } catch (e) {
         toast.add({ severity: 'error', summary: t('mxbackup_error'), detail: errorMessage(e), life: 10000 });
       }
@@ -47,7 +55,7 @@ function remove(row) {
 
 async function saved() {
   dialog.value = { open: false, profile: null };
-  await load(true);
+  await reload(true);
 }
 
 const builtin = (row) => row.name === 'prod' || row.name === 'dev';

@@ -17,18 +17,18 @@ async function load(force = false) {
   if (inflight) return inflight;
 
   loading.value = true;
+  // Ошибку не глотаем: молчаливый пустой список неотличим от «профилей нет»,
+  // а на деле это может быть упавший процессор. Показывать её — дело вызывающего.
   inflight = (async () => {
     try {
       const res = await ProfileApi.getList({ limit: 0 });
       profiles.value = listOf(res);
       loaded = true;
-    } catch (e) {
-      profiles.value = [];
+      return profiles.value;
     } finally {
       loading.value = false;
       inflight = null;
     }
-    return profiles.value;
   })();
 
   return inflight;

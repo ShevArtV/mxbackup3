@@ -24,9 +24,13 @@ const dialog = ref({ open: false, row: null });
 const truncateRow = computed(() => rows.value.find((r) => r.column === '*') || null);
 
 onMounted(async () => {
-  await loadProfiles();
-  // Обезличивание осмысленно прежде всего для dev-профиля — открываем на нём.
-  profile.value = defaultProfile('dev');
+  try {
+    await loadProfiles();
+    // Обезличивание осмысленно прежде всего для dev-профиля — открываем на нём.
+    profile.value = defaultProfile('dev');
+  } catch (e) {
+    toast.add({ severity: 'error', summary: t('mxbackup_error'), detail: errorMessage(e), life: 12000 });
+  }
 });
 
 watch(profile, async () => {

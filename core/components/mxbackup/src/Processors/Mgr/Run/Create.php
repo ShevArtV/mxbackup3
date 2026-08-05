@@ -6,7 +6,7 @@ use MxBackup\Processors\Mgr\Base;
 
 class Create extends Base
 {
-    protected $permission = 'mxbackup_run';
+    public $permission = 'mxbackup_run';
 
     public function process()
     {

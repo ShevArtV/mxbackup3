@@ -2,6 +2,7 @@
 
 namespace MxBackup\Processors\Mgr\Config;
 
+use MODX\Revolution\modSystemSetting;
 use MxBackup\Processors\Mgr\Base;
 
 class Get extends Base
@@ -29,9 +30,22 @@ class Get extends Base
     {
         $values = [];
         foreach (self::FIELDS as $field => $key) {
-            $values[$field] = $this->modx->getOption($key, null, '');
+            $values[$field] = $this->rawValue($key);
         }
 
         return $this->success('', $values);
+    }
+
+    /**
+     * Значение настройки как оно записано, без разворачивания плейсхолдеров.
+     *
+     * getOption() подставляет {core_path}, и форма сохранила бы обратно уже
+     * абсолютный путь — профиль перестал бы переезжать между сайтами.
+     */
+    private function rawValue(string $key)
+    {
+        $setting = $this->modx->getObject(modSystemSetting::class, ['key' => $key]);
+
+        return $setting ? (string) $setting->get('value') : (string) $this->modx->getOption($key, null, '');
     }
 }

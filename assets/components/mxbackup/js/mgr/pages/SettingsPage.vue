@@ -33,7 +33,11 @@ const formats = [
 ];
 
 onMounted(async () => {
-  await loadProfiles();
+  try {
+    await loadProfiles();
+  } catch (e) {
+    error.value = errorMessage(e, t('mxbackup_error'));
+  }
   await load();
 });
 
@@ -145,7 +149,7 @@ async function save() {
         <div class="mxb-field mxb-field--half">
           <label for="mxb-set-attach">{{ t('setting_mxbackup.mail_max_attachment_mb') }}</label>
           <InputNumber
-            id="mxb-set-attach"
+            input-id="mxb-set-attach"
             v-model="form.mail_max_attachment_mb"
             :min="0"
             :max-fraction-digits="1"
@@ -161,19 +165,22 @@ async function save() {
 
         <div class="mxb-field mxb-field--half">
           <label for="mxb-set-days">{{ t('setting_mxbackup.retention_days') }}</label>
-          <InputNumber id="mxb-set-days" v-model="form.retention_days" :min="0" fluid :disabled="loading" />
+          <InputNumber
+            input-id="mxb-set-days" v-model="form.retention_days" :min="0" fluid :disabled="loading" />
           <small>{{ t('setting_mxbackup.retention_days_desc') }}</small>
         </div>
 
         <div class="mxb-field mxb-field--half">
           <label for="mxb-set-count">{{ t('setting_mxbackup.retention_count') }}</label>
-          <InputNumber id="mxb-set-count" v-model="form.retention_count" :min="0" fluid :disabled="loading" />
+          <InputNumber
+            input-id="mxb-set-count" v-model="form.retention_count" :min="0" fluid :disabled="loading" />
           <small>{{ t('setting_mxbackup.retention_count_desc') }}</small>
         </div>
 
         <div class="mxb-field mxb-field--half">
           <label for="mxb-set-lock">{{ t('setting_mxbackup.lock_ttl_minutes') }}</label>
-          <InputNumber id="mxb-set-lock" v-model="form.lock_ttl_minutes" :min="0" fluid :disabled="loading" />
+          <InputNumber
+            input-id="mxb-set-lock" v-model="form.lock_ttl_minutes" :min="0" fluid :disabled="loading" />
           <small>{{ t('setting_mxbackup.lock_ttl_minutes_desc') }}</small>
         </div>
       </fieldset>
