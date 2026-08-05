@@ -115,6 +115,7 @@ async function restore() {
             id="mxb-restore-pass"
             v-model="password"
             :feedback="false"
+            :prompt-label="t('mxbackup_restore_password')"
             toggle-mask
             fluid
             autocomplete="off"

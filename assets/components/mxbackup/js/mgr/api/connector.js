@@ -17,7 +17,9 @@ function api() {
 
 // useApi БРОСАЕТ при !res.ok и при success === false (тело в err.data), поэтому
 // весь фронт строится на try/catch. X-Requested-With useApi сам не шлёт.
-const OPTS = { headers: { 'X-Requested-With': 'XMLHttpRequest' } };
+// Свой headers перекрывает дефолтный целиком (useApi спредит opts последним),
+// поэтому Accept задаём здесь же.
+const OPTS = { headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' } };
 const post = (action, params = {}) => api().post(action, params, OPTS);
 
 const P = 'MxBackup\\Processors\\Mgr\\';

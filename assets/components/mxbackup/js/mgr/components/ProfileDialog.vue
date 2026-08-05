@@ -162,6 +162,7 @@ async function save() {
             id="mxb-profile-pass"
             v-model="form.encryption_password"
             :feedback="false"
+            :prompt-label="t('mxbackup_encryption_password')"
             toggle-mask
             fluid
             autocomplete="new-password"

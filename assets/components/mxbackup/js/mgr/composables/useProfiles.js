@@ -7,20 +7,31 @@ import { ProfileApi, config, listOf } from '../api/connector.js';
 const profiles = ref([]);
 const loading = ref(false);
 let loaded = false;
+// Панели вкладок монтируются одновременно и зовут load() параллельно. Без
+// общего промиса второй вызов возвращал ещё пустой список, и вкладка навсегда
+// оставалась без выбранного профиля.
+let inflight = null;
 
 async function load(force = false) {
-  if (loading.value || (loaded && !force)) return profiles.value;
+  if (loaded && !force) return profiles.value;
+  if (inflight) return inflight;
+
   loading.value = true;
-  try {
-    const res = await ProfileApi.getList({ limit: 0 });
-    profiles.value = listOf(res);
-    loaded = true;
-  } catch (e) {
-    profiles.value = [];
-  } finally {
-    loading.value = false;
-  }
-  return profiles.value;
+  inflight = (async () => {
+    try {
+      const res = await ProfileApi.getList({ limit: 0 });
+      profiles.value = listOf(res);
+      loaded = true;
+    } catch (e) {
+      profiles.value = [];
+    } finally {
+      loading.value = false;
+      inflight = null;
+    }
+    return profiles.value;
+  })();
+
+  return inflight;
 }
 
 /** Имя профиля по умолчанию: из настроек, иначе первый доступный. */
