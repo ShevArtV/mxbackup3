@@ -1,8 +1,11 @@
 import { createApp } from 'vue';
 // Vue/PrimeVue берутся из Import Map пакета VueTools и не бандлятся.
-// Тема (Aura) и PrimeIcons тоже приходят оттуда — vuetools.css.
+// ⚠️ vuetools.css везёт только PrimeIcons — стилей компонентов там нет,
+// поэтому тему приходится включать здесь (styled-режим), а её глобальные
+// правила ограничивать вручную: см. scopeGlobalStyles().
 import { PrimeVue, Aura, ConfirmationService, ToastService, Tooltip } from 'primevue';
 import App from './App.vue';
+import { scopeGlobalStyles } from './utils/scope-styles.js';
 import './styles/app.css';
 
 const app = createApp(App);
@@ -13,3 +16,7 @@ app.use(ConfirmationService);
 app.use(ToastService);
 app.directive('tooltip', Tooltip);
 app.mount('#mxbackup-app');
+
+// PrimeVue инжектит глобальный reset (box-sizing) на всю страницу и ломает
+// вёрстку родной админки MODX — ограничиваем его нашим приложением.
+scopeGlobalStyles();
