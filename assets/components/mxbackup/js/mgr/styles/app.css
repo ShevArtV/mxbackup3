@@ -17,9 +17,42 @@
     /* Боковые отступы обязательны: контейнер #modx-content примыкает вплотную
        к дереву ресурсов и своего padding не имеет — без этого страница
        слипается с деревом. */
-    padding: 0 1.25rem 2rem;
+    padding: 0 1.25rem 1rem;
     color: var(--p-text-color);
     font-size: 0.875rem;
+
+    /* 🚦 Свой скролл обязателен. Фрейм менеджера страницу НЕ прокручивает:
+       #modx-content — корень ExtJS-панели с фиксированной высотой, и его
+       .x-panel-body не наращивает scrollHeight под нашу разметку. Без этого
+       низ длинной вкладки вместе с пагинатором уходит под экран навсегда
+       (замер: при окне 800px пагинатор оказывался на 1593px). */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Шапка и вкладки остаются на месте, прокручивается содержимое вкладки. */
+.mxb-head,
+.mxb-lastrun {
+    flex: 0 0 auto;
+}
+
+.mxb-tabs {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.mxb-tabs .p-tablist {
+    flex: 0 0 auto;
+}
+
+.mxb-tabs .p-tabpanels {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 /* Шапка: заголовок и панель запуска. */
@@ -307,6 +340,17 @@
 
 .mxb-lastrun {
     margin-top: var(--mxb-gap);
+}
+
+@media (max-width: 60rem) {
+    .mxb {
+        height: auto;
+        overflow: visible;
+    }
+
+    .mxb-tabs .p-tabpanels {
+        overflow-y: visible;
+    }
 }
 
 @media (max-width: 48rem) {
