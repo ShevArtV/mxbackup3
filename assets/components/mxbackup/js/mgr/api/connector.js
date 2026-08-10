@@ -71,8 +71,10 @@ export const RuleApi = {
 
 export const RunApi = {
   getList: (params = {}) => post(P + 'Run\\GetList', params),
+  estimate: (profile) => post(P + 'Run\\Estimate', { profile }),
   create: (profile, dryRun = false) =>
     post(P + 'Run\\Create', { profile, dry_run: dryRun ? 1 : 0 }),
+  cancel: (id = 0) => post(P + 'Run\\Cancel', { id }),
 };
 
 export const ConfigApi = {

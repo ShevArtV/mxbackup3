@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { Button, Select, Tab, TabList, TabPanel, TabPanels, Tabs, Toast, ConfirmDialog, useToast } from 'primevue';
+import { Button, Select, Tab, TabList, TabPanel, TabPanels, Tabs, Toast, ConfirmDialog, useConfirm, useToast } from 'primevue';
 import { t } from './utils/i18n.js';
 import { config, errorMessage } from './api/connector.js';
 import { ConfigApi, RunApi } from './api/connector.js';
@@ -11,8 +11,10 @@ import MaskingPage from './pages/MaskingPage.vue';
 import HistoryPage from './pages/HistoryPage.vue';
 import SettingsPage from './pages/SettingsPage.vue';
 import RunReport from './components/RunReport.vue';
+import { formatBytes } from './utils/format.js';
 
 const toast = useToast();
+const confirm = useConfirm();
 const cfg = config();
 const can = cfg.permissions || {};
 const { profiles, load: loadProfiles, defaultProfile } = useProfiles();
@@ -39,10 +41,39 @@ onMounted(async () => {
 
 async function run(dryRun) {
   if (!runProfile.value || running.value) return;
+  let estimate;
+  try {
+    estimate = (await RunApi.estimate(runProfile.value)).object || {};
+  } catch (e) {
+    toast.add({ severity: 'error', summary: t('mxbackup_error'), detail: errorMessage(e), life: 10000 });
+    return;
+  }
+  const warning = (estimate.warnings || []).join(' ');
+  const accepted = await new Promise((resolve) => confirm.require({
+    header: t('mxbackup_run'),
+    message: `${dryRun ? t('mxbackup_confirm_dryrun') : t('mxbackup_confirm_run')}\n\n`
+      + `${t('mxbackup_report_files')}: ${estimate.files || 0}\n`
+      + `${t('mxbackup_source_size')}: ${formatBytes(estimate.file_bytes)}\n`
+      + `${t('mxbackup_free_space')}: ${formatBytes(estimate.free_bytes)}`
+      + (warning ? `\n\n${warning}` : ''),
+    accept: () => resolve(true),
+    reject: () => resolve(false),
+  }));
+  if (!accepted) return;
   running.value = true;
   report.value = null;
   try {
     const res = await RunApi.create(runProfile.value, dryRun);
+    if (res.object?.cancelled) {
+      toast.add({
+        severity: 'warn',
+        summary: t('mxbackup_stop_backup'),
+        detail: res.message || t('mxbackup_status_cancelled'),
+        life: 6000,
+      });
+      historyRef.value?.reload();
+      return;
+    }
     report.value = { dryRun, data: res.object?.report || null, archive: res.object?.archive || '' };
     toast.add({
       severity: 'success',
@@ -60,6 +91,23 @@ async function run(dryRun) {
     });
   } finally {
     running.value = false;
+  }
+}
+
+async function cancelRun() {
+  const accepted = await new Promise((resolve) => confirm.require({
+    header: t('mxbackup_stop_backup'),
+    message: t('mxbackup_confirm_stop'),
+    accept: () => resolve(true),
+    reject: () => resolve(false),
+  }));
+  if (!accepted) return;
+  try {
+    const res = await RunApi.cancel();
+    toast.add({ severity: 'warn', summary: t('mxbackup_stop_backup'), detail: res.message || t('mxbackup_stop_requested'), life: 6000 });
+    historyRef.value?.reload();
+  } catch (e) {
+    toast.add({ severity: 'error', summary: t('mxbackup_error'), detail: errorMessage(e), life: 8000 });
   }
 }
 
@@ -129,6 +177,14 @@ async function validate() {
           text
           :disabled="running || !runProfile"
           @click="validate"
+        />
+        <Button
+          v-if="running"
+          :label="t('mxbackup_stop_backup')"
+          icon="pi pi-times"
+          severity="danger"
+          outlined
+          @click="cancelRun"
         />
       </div>
     </header>

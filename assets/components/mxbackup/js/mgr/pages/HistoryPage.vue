@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { Button, Column, DataTable, Tag, useToast } from 'primevue';
+import { Button, Column, DataTable, Tag, useConfirm, useToast } from 'primevue';
 import { t } from '../utils/i18n.js';
 import { formatBytes, formatDate, formatDuration, statusSeverity } from '../utils/format.js';
 import { RunApi, config, errorMessage, listOf } from '../api/connector.js';
@@ -8,6 +8,7 @@ import RunDetailsDialog from '../components/RunDetailsDialog.vue';
 import RestoreDialog from '../components/RestoreDialog.vue';
 
 const toast = useToast();
+const confirm = useConfirm();
 const can = config().permissions || {};
 
 const rows = ref([]);
@@ -60,6 +61,22 @@ function statusLabel(row) {
   const label = t('mxbackup_status_' + row.status);
   const count = row.errors_count || row.warnings_count;
   return count ? `${label} (${count})` : label;
+}
+
+function cancelRun(row) {
+  confirm.require({
+    header: t('mxbackup_stop_backup'),
+    message: t('mxbackup_confirm_stop'),
+    accept: async () => {
+      try {
+        const res = await RunApi.cancel(row.id);
+        toast.add({ severity: 'warn', summary: t('mxbackup_stop_backup'), detail: res.message || t('mxbackup_stop_requested'), life: 6000 });
+        await load();
+      } catch (e) {
+        toast.add({ severity: 'error', summary: t('mxbackup_error'), detail: errorMessage(e), life: 8000 });
+      }
+    },
+  });
 }
 
 defineExpose({ reload: () => { first.value = 0; return load(); } });
@@ -142,6 +159,17 @@ defineExpose({ reload: () => { first.value = 0; return load(); } });
               v-tooltip.top="t('mxbackup_run_details')"
               :aria-label="t('mxbackup_run_details')"
               @click="details = { open: true, run: data }"
+            />
+            <Button
+              v-if="data.status === 'running' && can.run"
+              icon="pi pi-times"
+              severity="danger"
+              text
+              rounded
+              size="small"
+              v-tooltip.top="t('mxbackup_stop_backup')"
+              :aria-label="t('mxbackup_stop_backup')"
+              @click="cancelRun(data)"
             />
             <Button
               v-if="restorable(data)"

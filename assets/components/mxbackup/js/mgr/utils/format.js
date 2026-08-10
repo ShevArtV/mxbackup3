@@ -27,7 +27,7 @@ export function formatDuration(seconds) {
 
 /** Статус запуска → severity PrimeVue Tag. */
 export function statusSeverity(status) {
-  return { success: 'success', warning: 'warn', error: 'danger', running: 'info' }[status] || 'secondary';
+  return { success: 'success', warning: 'warn', error: 'danger', running: 'info', cancelling: 'warn', cancelled: 'secondary' }[status] || 'secondary';
 }
 
 /** Действие обезличивания → severity: очистка данных заметнее замены. */

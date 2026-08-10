@@ -11,6 +11,9 @@ class Create extends Base
     public function process()
     {
         set_time_limit(0);
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
 
         try {
             $service = $this->service();
@@ -25,6 +28,8 @@ class Create extends Base
                 'archive' => $result->getArchivePath(),
                 'report' => $result->getReport(),
             ]);
+        } catch (\MxBackup\Core\Control\BackupCancelledException $e) {
+            return $this->success($e->getMessage(), ['cancelled' => true]);
         } catch (\Throwable $e) {
             return $this->failure($e->getMessage());
         }

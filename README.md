@@ -12,7 +12,7 @@
   данные MODX и miniShop2 заменяются стабильными тестовыми значениями.
 
 Требования: MODX 3.0+, PHP 8.1+, MySQL/MariaDB и PDO MySQL. Для ZIP нужен
-`ext-zip`, для `tar.gz` — `Phar` и `zlib`. Для AES-256 нужен `ext-zip`,
+`ext-zip`, для создания `tar.gz` — `zlib`, для восстановления — `Phar`. Для AES-256 нужен `ext-zip`,
 собранный с libzip 1.2 или новее. Интерфейс менеджера требует пакет
 [VueTools](https://github.com/modx-pro/vuetools) — общий стек Vue 3 + PrimeVue.
 
@@ -45,7 +45,9 @@
 - **Настройки** — системные настройки пакета без перехода в общий раздел.
 
 Кнопки запуска, dry-run и проверки конфигурации живут в шапке страницы и
-работают с выбранным профилем.
+работают с выбранным профилем. Перед запуском manager показывает число и размер
+файлов и свободное место. Активный backup можно безопасно остановить из шапки
+или истории запусков.
 
 В профиле `dev` стандартное обезличивание обязательно и не может быть отключено.
 Пользовательские правила имеют приоритет над встроенными.
@@ -55,7 +57,9 @@
 ```bash
 php core/components/mxbackup/cli/mxbackup.php validate-config
 php core/components/mxbackup/cli/mxbackup.php dry-run --profile=dev
+php core/components/mxbackup/cli/mxbackup.php estimate --profile=prod
 php core/components/mxbackup/cli/mxbackup.php backup --profile=prod
+php core/components/mxbackup/cli/mxbackup.php cancel
 php core/components/mxbackup/cli/mxbackup.php cleanup
 php core/components/mxbackup/cli/mxbackup.php restore-check --archive=/path/backup.zip
 php core/components/mxbackup/cli/mxbackup.php restore --archive=/path/backup.zip --scope=all --confirm=TOKEN
