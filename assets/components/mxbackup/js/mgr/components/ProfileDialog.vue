@@ -20,6 +20,7 @@ const empty = () => ({
   description: '',
   mode: 'custom',
   format: 'tar.gz',
+  storage_path: '',
   encryption_enabled: false,
   encryption_password: '',
   encryption_password_set: false,
@@ -95,6 +96,7 @@ async function save() {
     description: form.value.description || '',
     mode: form.value.mode,
     format: form.value.format,
+    storage_path: (form.value.storage_path || '').trim(),
     encryption_enabled: form.value.encryption_enabled ? 1 : 0,
     encryption_password: form.value.encryption_password || '',
     file_include: form.value.file_include || '*',
@@ -169,6 +171,12 @@ async function save() {
           option-label="label"
           option-value="value"
         />
+      </div>
+
+      <div class="mxb-field">
+        <label for="mxb-profile-storage">{{ t('mxbackup_profile_storage_path') }}</label>
+        <InputText id="mxb-profile-storage" v-model="form.storage_path" autocomplete="off" />
+        <small>{{ t('mxbackup_profile_storage_path_desc') }}</small>
       </div>
 
       <div class="mxb-field">

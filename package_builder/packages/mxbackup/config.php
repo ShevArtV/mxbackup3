@@ -14,7 +14,7 @@ return [
     'name' => 'mxBackup',
     'name_lower' => 'mxbackup',
     'name_short' => 'mxb',
-    'version' => '2.2.0',
+    'version' => '2.2.1',
     'release' => 'rc',
     'php_version' => '8.1',
 

@@ -372,7 +372,7 @@ final class Application
     private function help()
     {
         echo <<<'TXT'
-mxBackup 2.2.0-rc (MODX 3)
+mxBackup 2.2.1-rc (MODX 3)
 
 Usage:
   mxbackup.php backup --profile=prod [options]
