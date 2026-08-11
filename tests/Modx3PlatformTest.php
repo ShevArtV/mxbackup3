@@ -1,45 +1,7 @@
 <?php
 
-namespace {
-    if (!defined('MODX_CORE_PATH')) {
-        define('MODX_CORE_PATH', '/tmp/modx-core/');
-    }
-}
-
-namespace MODX\Revolution {
-    if (!class_exists('MODX\\Revolution\\modX')) {
-        /**
-         * Минимальный двойник ядра тройки: логирование платформы проверяется
-         * без живого MODX. Контейнер сервисов — как в xPDO 3 ($modx->services).
-         */
-        class modX
-        {
-            const LOG_LEVEL_DEBUG = 1;
-            const LOG_LEVEL_INFO = 2;
-            const LOG_LEVEL_WARN = 3;
-            const LOG_LEVEL_ERROR = 4;
-
-            public $mxl;
-            public $services;
-            public $packages = ['MxBackup\\Model' => true];
-            public $logs = [];
-
-            public function __construct()
-            {
-                $this->services = new class {
-                    public $items = [];
-                    public function has($name) { return isset($this->items[$name]); }
-                    public function get($name) { return $this->items[$name] ?? null; }
-                    public function add($name, $service) { $this->items[$name] = $service; }
-                };
-            }
-
-            public function getOption($key, $options = null, $default = null) { return $default; }
-            public function addPackage($package, $path, $prefix = null, $namespacePrefix = null) { return true; }
-            public function log($level, $message) { $this->logs[] = compact('level', 'message'); }
-        }
-    }
-}
+// Двойник ядра тройки живёт в tests/Fake/modx.php: его же использует
+// ConnectionTest, а объявить класс дважды нельзя.
 
 namespace MxBackup\Tests {
     use MODX\Revolution\modX;

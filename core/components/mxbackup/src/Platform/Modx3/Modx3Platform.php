@@ -8,6 +8,7 @@ use MxBackup\Core\Contract\PlatformInterface;
 final class Modx3Platform implements PlatformInterface
 {
     private $modx;
+    private $connection;
     private $database;
     private $profiles;
     private $runs;
@@ -77,9 +78,10 @@ final class Modx3Platform implements PlatformInterface
         return null;
     }
 
-    public function database() { return $this->database ?: $this->database = new DatabaseAdapter($this->modx); }
+    public function connection() { return $this->connection ?: $this->connection = new Connection($this->modx); }
+    public function database() { return $this->database ?: $this->database = new DatabaseAdapter($this->connection()); }
     public function profiles() { return $this->profiles ?: $this->profiles = new ProfileRepository($this->modx); }
-    public function runs() { return $this->runs ?: $this->runs = new RunRepository($this->modx); }
+    public function runs() { return $this->runs ?: $this->runs = new RunRepository($this->connection()); }
     public function mailer() { return $this->mailer ?: $this->mailer = new Mailer($this->modx); }
     public function getModx() { return $this->modx; }
 }

@@ -15,6 +15,8 @@ use MxBackup\Core\Files\FileRuleMatcher;
 use MxBackup\Core\Masking\Masker;
 use MxBackup\Core\Masking\RuleFactory;
 use MxBackup\Core\Masking\StandardRules;
+use MxBackup\Core\Progress\NullProgress;
+use MxBackup\Core\Progress\ProgressInterface;
 use MxBackup\Core\Report\ManifestBuilder;
 use MxBackup\Core\Report\RunReport;
 use MxBackup\Core\Storage\LocalStorage;
@@ -30,19 +32,23 @@ class BackupRunner
     // Единственная строка, которой ядро линии MODX 2 отличается от линии MODX 3:
     // версия попадает в manifest архива, а нумерация у линий разная
     // (мажор означает платформу).
-    const VERSION = '2.3.0-rc';
+    const VERSION = '2.4.0-rc';
 
     private $platform;
     private $storage;
     private $validator;
     private $lock;
+    private $progress;
 
-    public function __construct(PlatformInterface $platform)
+    public function __construct(PlatformInterface $platform, ProgressInterface $progress = null)
     {
         $this->platform = $platform;
         $this->storage = new LocalStorage();
         $this->validator = new PathValidator();
         $this->lock = new RunLock();
+        // По умолчанию прогона не видно: индикация нужна человеку у терминала, а
+        // в manager и cron она только мусорит в вывод.
+        $this->progress = $progress ?: new NullProgress();
     }
 
     public function run(array $config, $dryRun = false)
@@ -107,6 +113,15 @@ class BackupRunner
             }
             $cancellationMarker = rtrim($storagePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '.mxbackup-cancel-' . $runId;
             $cancellation = new CancellationToken($this->platform->runs(), $runId, 0.2, $cancellationMarker);
+            // Тик долгих стадий: и точка отмены, и keepalive базы. Упаковка
+            // архива с выгрузкой идут минутами без единого запроса, за это время
+            // сервер закрывает соединение по своему таймауту, и следующая
+            // запись в историю падает с «MySQL server has gone away».
+            $database = $this->platform->database();
+            $tick = static function () use ($cancellation, $database) {
+                $cancellation->checkpoint();
+                $database->keepAlive();
+            };
             $this->platform->log('info', 'Запуск резервного копирования.', [
                 'run_id' => $runId,
                 'profile' => $profileName,
@@ -118,14 +133,20 @@ class BackupRunner
             if (strpos($storagePath . DIRECTORY_SEPARATOR, $siteRoot . DIRECTORY_SEPARATOR) === 0) {
                 $fileExcludes[] = str_replace(DIRECTORY_SEPARATOR, '/', ltrim(substr($storagePath, strlen($siteRoot)), DIRECTORY_SEPARATOR)) . '/';
             }
+            $this->progress->plan($this->planStages($profile, $dryRun));
+
             $matcher = new FileRuleMatcher($profile['files']['include'], $fileExcludes);
             $collector = new FileCollector();
             $files = [];
             $fileBytes = 0;
+            // Сколько файлов найдётся, заранее неизвестно: обход дерева и есть
+            // работа этой стадии. Поэтому счётчик без общего числа.
+            $this->progress->stage('Сбор файлов');
             foreach ($collector->collect($siteRoot, $matcher) as $file) {
                 $cancellation->checkpoint();
                 $files[] = $file;
                 $fileBytes += $file['size'];
+                $this->progress->advance(1, isset($file['relative']) ? $file['relative'] : null);
             }
             foreach ($collector->getWarnings() as $warning) {
                 $report->warning($warning);
@@ -135,6 +156,7 @@ class BackupRunner
             $report->set('files_excluded', $collector->getExcludedCount());
 
             $databaseConfig = $profile['database'];
+            $this->progress->stage('Подготовка базы');
             $tables = (new TableSelector())->select(
                 $this->platform->database()->listTables(),
                 isset($databaseConfig['include_tables']) ? $databaseConfig['include_tables'] : ['*'],
@@ -157,8 +179,10 @@ class BackupRunner
             $maskedColumns = 0;
             $truncatedTables = [];
             if ($masker) {
+                $this->progress->total(count($tables));
                 foreach ($tables as $table) {
                     $cancellation->checkpoint();
+                    $this->progress->advance(1, $table);
                     $plan = $masker->planTable($table, $this->platform->database()->describeTable($table));
                     if ($plan['truncated']) {
                         $truncatedTables[] = $table;
@@ -200,11 +224,13 @@ class BackupRunner
 
             $workspace = $this->storage->createWorkspace($storagePath);
             $sqlPath = $workspace . DIRECTORY_SEPARATOR . 'database.sql';
+            $this->progress->stage('Дамп базы', count($tables));
             $databaseReport = (new DatabaseDumper($this->platform->database(), $masker))->dump(
                 $sqlPath,
                 $tables,
                 isset($config['batch_size']) ? (int)$config['batch_size'] : 500,
-                [$cancellation, 'checkpoint']
+                $tick,
+                $this->progress
             );
             foreach ($databaseReport['warnings'] as $warning) {
                 $report->warning($warning);
@@ -233,6 +259,9 @@ class BackupRunner
             if (is_file($final)) {
                 $final = $storagePath . DIRECTORY_SEPARATOR . $baseName . '-' . bin2hex(random_bytes(3)) . '.' . $extension;
             }
+            // Помимо файлов сайта в архив ложатся database.sql и манифест —
+            // отсюда +2 к общему счётчику.
+            $this->progress->stage('Упаковка архива', count($files) + 2);
             (new ArchiveWriter())->write(
                 $temporary,
                 $format,
@@ -240,11 +269,13 @@ class BackupRunner
                 $sqlPath,
                 $manifestPath,
                 $encrypted ? (string) $encryption['password'] : null,
-                [$cancellation, 'checkpoint']
+                $tick,
+                $this->progress
             );
             $archivePath = $this->storage->finalize($temporary, $final);
             $archiveSize = filesize($archivePath) ?: 0;
-            $archiveChecksum = $this->hashFile($archivePath, $cancellation);
+            $this->progress->stage('Контрольная сумма', $archiveSize);
+            $archiveChecksum = $this->hashFile($archivePath, $tick);
             $report->set('archive_size', $archiveSize);
             $report->set('archive_checksum', $archiveChecksum);
 
@@ -258,7 +289,7 @@ class BackupRunner
             }
             $report->set('mail', $mailResult->toArray());
 
-            $uploaded = $this->uploadToRemote($profile, $archivePath, $archiveChecksum, $report, $runId, $cancellation);
+            $uploaded = $this->uploadToRemote($profile, $archivePath, $archiveChecksum, $report, $runId, $cancellation, $tick);
 
             // Локальная глубина при удавшейся выгрузке считается по keep_local:
             // держать на машине семь копий по 150 МБ, когда они же лежат в
@@ -347,6 +378,9 @@ class BackupRunner
             if ($cancellationMarker && is_file($cancellationMarker)) {
                 @unlink($cancellationMarker);
             }
+            // Закрывает незавершённую стадию и на ошибке: по последней строке
+            // видно, на чём прогон оборвался.
+            $this->progress->finish();
             $this->lock->release();
         }
     }
@@ -365,7 +399,7 @@ class BackupRunner
      *
      * @return bool Выгрузка удалась.
      */
-    private function uploadToRemote(array $profile, $archivePath, $archiveChecksum, RunReport $report, $runId, CancellationToken $cancellation)
+    private function uploadToRemote(array $profile, $archivePath, $archiveChecksum, RunReport $report, $runId, CancellationToken $cancellation, callable $tick)
     {
         try {
             $storage = $this->createRemoteStorage($profile);
@@ -385,11 +419,12 @@ class BackupRunner
 
         try {
             $cancellation->checkpoint(true);
+            $this->progress->stage('Выгрузка в ' . $storage->describe(), filesize($archivePath) ?: null);
             $location = $storage->upload($archivePath, $name, [
                 'sha256' => (string) $archiveChecksum,
                 'profile' => isset($profile['name']) ? (string) $profile['name'] : '',
                 'mxbackup' => self::VERSION,
-            ], [$cancellation, 'checkpoint']);
+            ], $tick, $this->progress);
             $cancellation->checkpoint(true);
         } catch (\Throwable $e) {
             if ($e instanceof BackupCancelledException) {
@@ -451,13 +486,39 @@ class BackupRunner
         return RemoteStorageFactory::create($profile);
     }
 
+    /**
+     * Список стадий для индикатора — чтобы человек видел «[3/6]», а не
+     * бесконечную ленту непонятной длины.
+     *
+     * ⚠️ Стадия выгрузки попадает в план по настройке профиля, а не по факту
+     * успеха: неудача выгрузки прогон не валит, и план от неё меняться не должен.
+     *
+     * @return string[]
+     */
+    private function planStages(array $profile, $dryRun)
+    {
+        $stages = ['Сбор файлов', 'Подготовка базы'];
+        if ($dryRun) {
+            return $stages;
+        }
+        $stages[] = 'Дамп базы';
+        $stages[] = 'Упаковка архива';
+        $stages[] = 'Контрольная сумма';
+        $driver = isset($profile['remote']['driver']) ? trim((string) $profile['remote']['driver']) : '';
+        if ($driver !== '' && $driver !== 'none') {
+            $stages[] = 'Выгрузка в хранилище';
+        }
+
+        return $stages;
+    }
+
     private function safeName($value)
     {
         $value = preg_replace('/[^a-z0-9_-]+/i', '-', (string)$value);
         return trim($value, '-') ?: 'backup';
     }
 
-    private function hashFile($path, CancellationToken $cancellation)
+    private function hashFile($path, callable $tick)
     {
         $handle = fopen($path, 'rb');
         if ($handle === false) {
@@ -472,7 +533,8 @@ class BackupRunner
                 }
                 if ($chunk !== '') {
                     hash_update($context, $chunk);
-                    $cancellation->checkpoint();
+                    $tick();
+                    $this->progress->advance(strlen($chunk));
                 }
             }
         } finally {

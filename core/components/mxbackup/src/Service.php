@@ -7,6 +7,7 @@ use MxBackup\Core\BackupRunner;
 use MxBackup\Core\Config\ConfigLoader;
 use MxBackup\Core\Config\ConfigResolver;
 use MxBackup\Core\Config\Defaults;
+use MxBackup\Core\Progress\ProgressInterface;
 use MxBackup\Core\RestoreRunner;
 use MxBackup\Platform\Modx3\Modx3Platform;
 
@@ -75,14 +76,14 @@ final class Service
         );
     }
 
-    public function runner()
+    public function runner(ProgressInterface $progress = null)
     {
-        return new BackupRunner($this->platform());
+        return new BackupRunner($this->platform(), $progress);
     }
 
-    public function restoreRunner()
+    public function restoreRunner(ProgressInterface $progress = null)
     {
-        return new RestoreRunner($this->platform());
+        return new RestoreRunner($this->platform(), null, $progress);
     }
 
     /**
