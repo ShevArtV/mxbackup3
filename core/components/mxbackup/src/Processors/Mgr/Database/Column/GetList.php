@@ -50,6 +50,7 @@ class GetList extends Base
                 'action' => 'truncate', 'source' => $tableRule['source'],
                 'rule_id' => $tableRule['rule_id'], 'target_type' => 'table',
                 'target' => $table, 'json_path' => '', 'value' => null, 'priority' => $tableRule['priority'],
+                'when' => [],
             ];
         }
 
@@ -66,6 +67,7 @@ class GetList extends Base
                 'target' => $effective ? $effective['target'] : ($table . '.' . $column),
                 'json_path' => $effective ? $effective['json_path'] : '',
                 'value' => $effective ? $effective['value'] : null,
+                'when' => $effective ? $effective['when'] : [],
                 'priority' => $effective ? $effective['priority'] : 0,
             ];
         }
@@ -101,6 +103,7 @@ class GetList extends Base
                     'target' => $rule->getTable() . '.' . $rule->getColumn(),
                     'json_path' => $rule->getJsonPath() === null ? '' : $rule->getJsonPath(),
                     'value' => $rule->getValue(), 'priority' => $rule->getPriority(),
+                    'when' => $rule->getWhen(),
                 ];
             }
         }
@@ -117,6 +120,7 @@ class GetList extends Base
                 'action' => $rule['action'], 'source' => 'custom', 'rule_id' => (int) $rule['id'],
                 'target_type' => $rule['target_type'], 'target' => $rule['target'], 'json_path' => $jsonPath,
                 'value' => $rule['value'], 'priority' => (int) $rule['priority'],
+                'when' => isset($rule['when']) && is_array($rule['when']) ? $rule['when'] : [],
             ];
         }
 

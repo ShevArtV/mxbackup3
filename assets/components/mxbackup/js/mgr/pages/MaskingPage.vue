@@ -139,6 +139,12 @@ async function saved() {
 
 const sourceLabel = (source) => t('mxbackup_source_' + (source || 'none'));
 const sourceSeverity = (source) => ({ standard: 'success', custom: 'info' }[source] || 'secondary');
+const whenLabel = (when) => {
+  if (!when || typeof when !== 'object' || Array.isArray(when)) return '';
+  return Object.entries(when)
+    .map(([column, patterns]) => `${column}: ${(Array.isArray(patterns) ? patterns : [patterns]).join(', ')}`)
+    .join('; ');
+};
 </script>
 
 <template>
@@ -215,6 +221,12 @@ const sourceSeverity = (source) => ({ standard: 'success', custom: 'info' }[sour
           <Tag :value="sourceLabel(data.source)" :severity="sourceSeverity(data.source)" />
         </template>
       </Column>
+      <Column :header="t('mxbackup_when')" style="min-width: 15rem">
+        <template #body="{ data }">
+          <code v-if="whenLabel(data.when)">{{ whenLabel(data.when) }}</code>
+          <span v-else class="mxb-muted">—</span>
+        </template>
+      </Column>
       <Column field="value" :header="t('mxbackup_value')">
         <template #body="{ data }">
           <code v-if="data.value !== null && data.value !== ''">{{ data.value }}</code>
@@ -256,6 +268,7 @@ const sourceSeverity = (source) => ({ standard: 'success', custom: 'info' }[sour
       :row="dialog.row"
       :profile="profile"
       :table="table"
+      :columns="rows.filter((row) => row.column !== '*').map((row) => row.column)"
       @saved="saved"
     />
   </div>

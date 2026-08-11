@@ -248,6 +248,72 @@
     font-weight: 600;
 }
 
+.mxb-conditions {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.mxb-when-table {
+    flex: 1 0 100%;
+    border: 1px solid var(--p-content-border-color);
+    border-radius: var(--p-content-border-radius);
+    overflow: hidden;
+}
+
+/* Ячейка в режиме показа и та же ячейка с редактором должны быть одной высоты,
+   иначе строки скачут на каждый клик. */
+.mxb-when-table .p-datatable-tbody > tr > td {
+    height: 2.75rem;
+    padding: 0.25rem 0.5rem;
+    vertical-align: middle;
+    cursor: text;
+}
+
+.mxb-when-table .p-datatable-tbody > tr > td:last-child {
+    cursor: default;
+}
+
+.mxb-when-table code {
+    font-size: 0.9em;
+}
+
+.mxb-when__placeholder {
+    color: var(--p-text-muted-color);
+    font-style: italic;
+}
+
+/* Подсветка того, из-за чего условие не сохранилось: общая ошибка сверху не
+   показывает, в какой именно строке дырка. */
+.mxb-when__invalid {
+    display: inline-block;
+    padding: 0.1rem 0.35rem;
+    border-radius: var(--p-content-border-radius);
+    background: var(--p-red-100, #fde8e8);
+    color: var(--p-red-700, #a33a3a);
+    font-style: normal;
+}
+
+.mxb-when__empty {
+    color: var(--p-text-muted-color);
+}
+
+.mxb-when__legend {
+    margin: 0;
+}
+
+/* Родитель — grid, поэтому кнопка растянулась бы во всю ширину fieldset. */
+.mxb-condition__add {
+    justify-self: start;
+}
+
+.mxb-field .p-inputnumber-button {
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .mxb-when-table .p-datatable-tbody > tr > td { padding: 0.25rem 0.35rem; }
+}
+
 .mxb-form__actions {
     display: flex;
     flex: 1 0 100%;

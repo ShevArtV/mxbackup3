@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { Button, Dialog, InputNumber, InputText, Message, Select, Textarea, useToast } from 'primevue';
+import { Button, Column, DataTable, Dialog, InputNumber, InputText, Message, Select, Textarea, useToast } from 'primevue';
 import { t } from '../utils/i18n.js';
 import { RuleApi, errorMessage } from '../api/connector.js';
 
@@ -9,6 +9,7 @@ const props = defineProps({
   row: { type: Object, default: null },
   profile: { type: String, default: '' },
   table: { type: String, default: '' },
+  columns: { type: Array, default: () => [] },
 });
 const emit = defineEmits(['update:visible', 'saved']);
 
@@ -16,7 +17,7 @@ const toast = useToast();
 const saving = ref(false);
 const error = ref('');
 
-const form = ref({ action: 'mask', json_path: '', value: '', priority: 100 });
+const form = ref({ action: 'mask', json_path: '', value: '', priority: 100, when: [] });
 
 const actions = computed(() => [
   { value: 'mask', label: t('mxbackup_action_mask') },
@@ -28,6 +29,59 @@ const actions = computed(() => [
 const isCustom = computed(() => props.row?.source === 'custom' && props.row?.rule_id);
 const needsValue = computed(() => form.value.action === 'replace');
 
+// Хранится условие как `{колонка: [маска, маска]}`, а правится построчно: одна
+// строка таблицы — одна пара «колонка + маска». Повторы колонки не запрещены,
+// они и означают «ИЛИ»; при сохранении строки схлопываются обратно в массивы.
+function conditionRows(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return [];
+  return Object.entries(value).flatMap(([column, patterns]) =>
+    (Array.isArray(patterns) ? patterns : [patterns]).map((pattern) => ({
+      column,
+      pattern: String(pattern),
+      invalidColumn: false,
+      invalidPattern: false,
+    }))
+  );
+}
+
+function addCondition() {
+  form.value.when.push({ column: '', pattern: '', invalidColumn: false, invalidPattern: false });
+}
+
+function removeCondition(index) {
+  form.value.when.splice(index, 1);
+}
+
+// DataTable в режиме cell редактирует копию строки, значение надо перенести самим.
+function onCellEditComplete(event) {
+  const { data, field, newValue } = event;
+  data[field] = String(newValue === null || newValue === undefined ? '' : newValue).trim();
+  data[field === 'column' ? 'invalidColumn' : 'invalidPattern'] = false;
+}
+
+function normalizedWhen() {
+  const result = {};
+  let invalid = false;
+  // Полностью пустая строка — след кнопки «Добавить условие», её просто убираем.
+  form.value.when = form.value.when.filter(
+    (condition) => String(condition.column || '').trim() || String(condition.pattern || '').trim()
+  );
+  for (const condition of form.value.when) {
+    const column = String(condition.column || '').trim();
+    const pattern = String(condition.pattern || '').trim();
+    condition.invalidColumn = !column;
+    condition.invalidPattern = !pattern || pattern === '!';
+    if (condition.invalidColumn || condition.invalidPattern) {
+      invalid = true;
+      continue;
+    }
+    if (!Object.hasOwn(result, column)) result[column] = [];
+    if (!result[column].includes(pattern)) result[column].push(pattern);
+  }
+  if (invalid) throw new Error(t('mxbackup_invalid_when'));
+  return result;
+}
+
 watch(
   () => [props.visible, props.row],
   () => {
@@ -38,6 +92,7 @@ watch(
       json_path: props.row.json_path || '',
       value: props.row.value === null || props.row.value === undefined ? '' : String(props.row.value),
       priority: props.row.priority || 100,
+      when: conditionRows(props.row.when),
     };
   },
   { immediate: true }
@@ -48,17 +103,18 @@ async function save() {
   error.value = '';
   // JSON-путь дописывается к цели третьим сегментом: table.column.path.
   const jsonPath = String(form.value.json_path || '').replace(/^\$?\.?/, '');
-  const params = {
-    profile_id: props.profile,
-    target_type: jsonPath ? 'json_path' : 'column',
-    target: `${props.table}.${props.row.column}${jsonPath ? '.' + jsonPath : ''}`,
-    // Не `action`: в коннекторе MODX этот параметр занят именем процессора.
-    rule_action: form.value.action,
-    value: form.value.value,
-    priority: form.value.priority,
-    active: 1,
-  };
   try {
+    const params = {
+      profile_id: props.profile,
+      target_type: jsonPath ? 'json_path' : 'column',
+      target: `${props.table}.${props.row.column}${jsonPath ? '.' + jsonPath : ''}`,
+      // Не `action`: в коннекторе MODX этот параметр занят именем процессора.
+      rule_action: form.value.action,
+      value: form.value.value,
+      when: JSON.stringify(normalizedWhen()),
+      priority: form.value.priority,
+      active: 1,
+    };
     if (isCustom.value) {
       await RuleApi.update({ ...params, id: props.row.rule_id });
     } else {
@@ -112,6 +168,72 @@ async function save() {
         <Textarea id="mxb-rule-value" v-model="form.value" rows="2" auto-resize />
         <small>{{ t('mxbackup_replacement_desc') }}</small>
       </div>
+
+      <fieldset class="mxb-fieldset mxb-conditions">
+        <legend>{{ t('mxbackup_when_title') }}</legend>
+        <small class="mxb-field__hint">{{ t('mxbackup_when_desc') }}</small>
+
+        <DataTable
+          :value="form.when"
+          edit-mode="cell"
+          size="small"
+          class="mxb-when-table"
+          @cell-edit-complete="onCellEditComplete"
+        >
+          <template #empty>
+            <span class="mxb-when__empty">{{ t('mxbackup_when_empty') }}</span>
+          </template>
+
+          <Column :header="t('mxbackup_when_column')" field="column" style="width: 40%">
+            <template #body="{ data }">
+              <span v-if="data.column" :class="{ 'mxb-when__invalid': data.invalidColumn }">{{ data.column }}</span>
+              <span v-else class="mxb-when__placeholder" :class="{ 'mxb-when__invalid': data.invalidColumn }">
+                {{ t('mxbackup_when_column_empty') }}
+              </span>
+            </template>
+            <template #editor="{ data }">
+              <Select v-model="data.column" :options="columns" filter fluid />
+            </template>
+          </Column>
+
+          <Column :header="t('mxbackup_when_pattern')" field="pattern">
+            <template #body="{ data }">
+              <code v-if="data.pattern" :class="{ 'mxb-when__invalid': data.invalidPattern }">{{ data.pattern }}</code>
+              <span v-else class="mxb-when__placeholder" :class="{ 'mxb-when__invalid': data.invalidPattern }">
+                {{ t('mxbackup_when_example') }}
+              </span>
+            </template>
+            <template #editor="{ data }">
+              <InputText v-model="data.pattern" :placeholder="t('mxbackup_when_example')" fluid autocomplete="off" />
+            </template>
+          </Column>
+
+          <Column style="width: 3rem">
+            <template #body="{ index }">
+              <Button
+                icon="pi pi-times"
+                severity="danger"
+                text
+                rounded
+                :aria-label="t('mxbackup_remove')"
+                @click="removeCondition(index)"
+              />
+            </template>
+          </Column>
+        </DataTable>
+
+        <Button
+          :label="t('mxbackup_add_condition')"
+          icon="pi pi-plus"
+          severity="secondary"
+          size="small"
+          outlined
+          class="mxb-condition__add"
+          @click="addCondition"
+        />
+
+        <small class="mxb-field__hint mxb-when__legend">{{ t('mxbackup_when_hint') }}</small>
+      </fieldset>
 
       <div class="mxb-field mxb-field--half">
         <label for="mxb-rule-priority">{{ t('mxbackup_priority') }}</label>

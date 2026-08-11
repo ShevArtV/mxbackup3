@@ -51,6 +51,11 @@ final class Validator
         if ($action === 'replace' && $processor->getProperty('value') === null) {
             throw new \InvalidArgumentException($modx->lexicon('field_required'));
         }
+        try {
+            $when = \MxBackup\Core\Masking\Rule::parseWhen($processor->getProperty('when', ''));
+        } catch (\InvalidArgumentException $e) {
+            throw new \InvalidArgumentException($modx->lexicon('mxbackup_invalid_when'));
+        }
 
         $rules = isset($profile['masking']['rules']) && is_array($profile['masking']['rules'])
             ? $profile['masking']['rules']
@@ -69,6 +74,7 @@ final class Validator
             'target' => $target,
             'action' => $action,
             'value' => $processor->getProperty('value'),
+            'when' => $when,
             'priority' => (int) $processor->getProperty('priority', 100),
             'active' => in_array($processor->getProperty('active', 1), [true, 1, '1', 'true', 'on'], true),
         ];
