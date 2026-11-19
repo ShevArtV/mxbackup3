@@ -76,12 +76,12 @@ final class Service
         );
     }
 
-    public function runner(ProgressInterface $progress = null)
+    public function runner(?ProgressInterface $progress = null)
     {
         return new BackupRunner($this->platform(), $progress);
     }
 
-    public function restoreRunner(ProgressInterface $progress = null)
+    public function restoreRunner(?ProgressInterface $progress = null)
     {
         return new RestoreRunner($this->platform(), null, $progress);
     }

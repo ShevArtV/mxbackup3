@@ -11,7 +11,7 @@ use RuntimeException;
 
 final class FileRestorer
 {
-    public function restore($stagedSitePath, $siteRoot, ProgressInterface $progress = null)
+    public function restore($stagedSitePath, $siteRoot, ?ProgressInterface $progress = null)
     {
         $progress = $progress ?: new NullProgress();
         $source = realpath((string)$stagedSitePath);

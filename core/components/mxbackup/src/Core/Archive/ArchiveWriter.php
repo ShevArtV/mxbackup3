@@ -9,7 +9,7 @@ use ZipArchive;
 
 final class ArchiveWriter
 {
-    public function write($path, $format, iterable $files, $sqlPath, $manifestPath, $password = null, callable $checkpoint = null, ProgressInterface $progress = null)
+    public function write($path, $format, iterable $files, $sqlPath, $manifestPath, $password = null, ?callable $checkpoint = null, ?ProgressInterface $progress = null)
     {
         $progress = $progress ?: new NullProgress();
         if ($format === 'zip') {
@@ -24,7 +24,7 @@ final class ArchiveWriter
         throw new RuntimeException('Неподдерживаемый формат архива: ' . $format);
     }
 
-    private function writeZip($path, iterable $files, $sqlPath, $manifestPath, $password, callable $checkpoint = null, ProgressInterface $progress = null)
+    private function writeZip($path, iterable $files, $sqlPath, $manifestPath, $password, ?callable $checkpoint = null, ?ProgressInterface $progress = null)
     {
         $progress = $progress ?: new NullProgress();
         if (!class_exists('ZipArchive')) {

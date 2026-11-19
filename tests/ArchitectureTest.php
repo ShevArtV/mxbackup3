@@ -135,4 +135,42 @@ final class ArchitectureTest extends TestCase
 
         self::assertGreaterThan(0, $checked);
     }
+
+    /**
+     * PHP 8.4+/8.5 помечает неявный nullable-параметр (тип + default null без ?) как Deprecated.
+     * При display_errors=1 HTML deprecation уходит в вывод ещё на autoload
+     * (Composer ClassLoader), и MODX connector отвечает
+     * «Cannot modify header information - headers already sent» вместо JSON.
+     * Явный `?Type` / `?callable` совместим с минимумом линии (PHP 8.1+).
+     */
+    public function testSourceAvoidsImplicitNullableParameters()
+    {
+        $root = dirname(__DIR__) . '/core/components/mxbackup/src';
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
+        );
+        $offenders = [];
+
+        // Typed param с default null без ведущего `?` и без `|null`.
+        $pattern = '/(?<![?\\\\|])\b((?:callable|array|iterable|object|string|int|float|bool|[A-Z][\w\\\\]*))\s+\$\w+\s*=\s*null\b/';
+
+        foreach ($iterator as $file) {
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+            $source = file_get_contents($file->getPathname());
+            if (!preg_match_all($pattern, $source, $matches)) {
+                continue;
+            }
+            foreach ($matches[0] as $match) {
+                $offenders[] = $file->getPathname() . ': ' . trim($match);
+            }
+        }
+
+        self::assertSame(
+            [],
+            $offenders,
+            "Implicit nullable в сигнатурах (нужен ?Type / ?callable):\n" . implode("\n", $offenders)
+        );
+    }
 }

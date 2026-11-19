@@ -13,13 +13,13 @@ final class DatabaseDumper
     private $database;
     private $masker;
 
-    public function __construct(DatabaseAdapterInterface $database, Masker $masker = null)
+    public function __construct(DatabaseAdapterInterface $database, ?Masker $masker = null)
     {
         $this->database = $database;
         $this->masker = $masker;
     }
 
-    public function dump($path, array $tables, $batchSize = 500, callable $checkpoint = null, ProgressInterface $progress = null)
+    public function dump($path, array $tables, $batchSize = 500, ?callable $checkpoint = null, ?ProgressInterface $progress = null)
     {
         $progress = $progress ?: new NullProgress();
         $handle = fopen($path, 'wb');

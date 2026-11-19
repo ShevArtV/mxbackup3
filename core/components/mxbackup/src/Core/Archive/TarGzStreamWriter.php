@@ -12,7 +12,7 @@ final class TarGzStreamWriter
     private $stream;
     private $checkpoint;
 
-    public function write($path, iterable $files, $sqlPath, $manifestPath, callable $checkpoint = null, ProgressInterface $progress = null)
+    public function write($path, iterable $files, $sqlPath, $manifestPath, ?callable $checkpoint = null, ?ProgressInterface $progress = null)
     {
         if (!function_exists('gzopen')) {
             throw new RuntimeException('Для tar.gz требуется расширение zlib.');

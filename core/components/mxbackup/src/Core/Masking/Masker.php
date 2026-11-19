@@ -8,7 +8,7 @@ final class Masker
     private $jsonMasker;
     private $requiredColumns;
 
-    public function __construct(array $rules, JsonPathMasker $jsonMasker = null, array $requiredColumns = [])
+    public function __construct(array $rules, ?JsonPathMasker $jsonMasker = null, array $requiredColumns = [])
     {
         usort($rules, static function (Rule $a, Rule $b) {
             return $a->getPriority() <=> $b->getPriority();

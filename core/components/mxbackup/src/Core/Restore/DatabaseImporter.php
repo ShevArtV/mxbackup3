@@ -16,7 +16,7 @@ final class DatabaseImporter
         $this->database = $database;
     }
 
-    public function import($sqlPath, ProgressInterface $progress = null)
+    public function import($sqlPath, ?ProgressInterface $progress = null)
     {
         $progress = $progress ?: new NullProgress();
         $handle = fopen((string)$sqlPath, 'rb');

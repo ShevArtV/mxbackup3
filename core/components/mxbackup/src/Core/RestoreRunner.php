@@ -26,7 +26,7 @@ final class RestoreRunner
     private $safetyBackup;
     private $progress;
 
-    public function __construct(PlatformInterface $platform, callable $safetyBackup = null, ProgressInterface $progress = null)
+    public function __construct(PlatformInterface $platform, ?callable $safetyBackup = null, ?ProgressInterface $progress = null)
     {
         $this->platform = $platform;
         $this->reader = new ArchiveReader();

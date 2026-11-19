@@ -62,7 +62,7 @@ final class ArchiveReader
         ];
     }
 
-    public function extract($archivePath, $workspace, $password = null, ProgressInterface $progress = null)
+    public function extract($archivePath, $workspace, $password = null, ?ProgressInterface $progress = null)
     {
         $progress = $progress ?: new NullProgress();
         $info = $this->inspect($archivePath, $password);
