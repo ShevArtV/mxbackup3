@@ -25,6 +25,9 @@ const form = ref({
   retention_days: 30,
   retention_count: 10,
   lock_ttl_minutes: 720,
+  s3_multipart_threshold_mb: 16,
+  s3_part_size_mb: 16,
+  s3_part_retries: 3,
 });
 
 const formats = [
@@ -55,6 +58,9 @@ async function load() {
       retention_days: Number(values.retention_days || 0),
       retention_count: Number(values.retention_count || 0),
       lock_ttl_minutes: Number(values.lock_ttl_minutes || 0),
+      s3_multipart_threshold_mb: Number(values.s3_multipart_threshold_mb || 0),
+      s3_part_size_mb: Number(values.s3_part_size_mb || 0),
+      s3_part_retries: Number(values.s3_part_retries || 0),
     };
   } catch (e) {
     error.value = errorMessage(e, t('mxbackup_error'));
@@ -182,6 +188,46 @@ async function save() {
           <InputNumber
             input-id="mxb-set-lock" v-model="form.lock_ttl_minutes" :min="0" fluid :disabled="loading" />
           <small>{{ t('setting_mxbackup.lock_ttl_minutes_desc') }}</small>
+        </div>
+      </fieldset>
+
+      <fieldset class="mxb-fieldset">
+        <legend>{{ t('area_mxbackup_s3') }}</legend>
+
+        <div class="mxb-field mxb-field--half">
+          <label for="mxb-set-s3-threshold">{{ t('setting_mxbackup.s3_multipart_threshold_mb') }}</label>
+          <InputNumber
+            input-id="mxb-set-s3-threshold"
+            v-model="form.s3_multipart_threshold_mb"
+            :min="0"
+            fluid
+            :disabled="loading"
+          />
+          <small>{{ t('setting_mxbackup.s3_multipart_threshold_mb_desc') }}</small>
+        </div>
+
+        <div class="mxb-field mxb-field--half">
+          <label for="mxb-set-s3-part">{{ t('setting_mxbackup.s3_part_size_mb') }}</label>
+          <InputNumber
+            input-id="mxb-set-s3-part"
+            v-model="form.s3_part_size_mb"
+            :min="5"
+            fluid
+            :disabled="loading"
+          />
+          <small>{{ t('setting_mxbackup.s3_part_size_mb_desc') }}</small>
+        </div>
+
+        <div class="mxb-field mxb-field--half">
+          <label for="mxb-set-s3-retries">{{ t('setting_mxbackup.s3_part_retries') }}</label>
+          <InputNumber
+            input-id="mxb-set-s3-retries"
+            v-model="form.s3_part_retries"
+            :min="0"
+            fluid
+            :disabled="loading"
+          />
+          <small>{{ t('setting_mxbackup.s3_part_retries_desc') }}</small>
         </div>
       </fieldset>
 

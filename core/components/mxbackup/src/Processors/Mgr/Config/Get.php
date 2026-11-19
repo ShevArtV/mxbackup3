@@ -24,6 +24,9 @@ class Get extends Base
         'retention_days' => 'mxbackup.retention_days',
         'retention_count' => 'mxbackup.retention_count',
         'lock_ttl_minutes' => 'mxbackup.lock_ttl_minutes',
+        's3_multipart_threshold_mb' => 'mxbackup.s3_multipart_threshold_mb',
+        's3_part_size_mb' => 'mxbackup.s3_part_size_mb',
+        's3_part_retries' => 'mxbackup.s3_part_retries',
     ];
 
     public function process()

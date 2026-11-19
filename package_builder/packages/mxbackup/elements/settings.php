@@ -56,4 +56,19 @@ return [
         'value' => '720',
         'area' => 'mxbackup_retention',
     ],
+    'mxbackup.s3_multipart_threshold_mb' => [
+        'xtype' => 'numberfield',
+        'value' => '16',
+        'area' => 'mxbackup_s3',
+    ],
+    'mxbackup.s3_part_size_mb' => [
+        'xtype' => 'numberfield',
+        'value' => '16',
+        'area' => 'mxbackup_s3',
+    ],
+    'mxbackup.s3_part_retries' => [
+        'xtype' => 'numberfield',
+        'value' => '3',
+        'area' => 'mxbackup_s3',
+    ],
 ];

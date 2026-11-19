@@ -18,6 +18,9 @@ class Update extends Base
             'mxbackup.retention_days' => 'numberfield',
             'mxbackup.retention_count' => 'numberfield',
             'mxbackup.lock_ttl_minutes' => 'numberfield',
+            'mxbackup.s3_multipart_threshold_mb' => 'numberfield',
+            'mxbackup.s3_part_size_mb' => 'numberfield',
+            'mxbackup.s3_part_retries' => 'numberfield',
         ];
 
         foreach (Get::FIELDS as $field => $key) {
