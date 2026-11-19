@@ -32,7 +32,7 @@ final class FakeRemoteStorage implements RemoteStorageInterface
         return 'fake://storage/';
     }
 
-    public function upload($path, $name, array $metadata = [], callable $checkpoint = null, ProgressInterface $progress = null)
+    public function upload($path, $name, array $metadata = [], ?callable $checkpoint = null, ?ProgressInterface $progress = null)
     {
         if ($checkpoint) $checkpoint();
         if ($this->failUpload) {

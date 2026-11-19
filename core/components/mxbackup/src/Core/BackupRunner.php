@@ -40,7 +40,7 @@ class BackupRunner
     private $lock;
     private $progress;
 
-    public function __construct(PlatformInterface $platform, ProgressInterface $progress = null)
+    public function __construct(PlatformInterface $platform, ?ProgressInterface $progress = null)
     {
         $this->platform = $platform;
         $this->storage = new LocalStorage();

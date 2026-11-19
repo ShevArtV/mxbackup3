@@ -47,7 +47,7 @@ class S3Client
     /** @var int */
     private $timeout;
 
-    public function __construct(array $config, CredentialProvider $credentials = null)
+    public function __construct(array $config, ?CredentialProvider $credentials = null)
     {
         $this->bucket = isset($config['bucket']) ? (string) $config['bucket'] : '';
         $this->region = isset($config['region']) && $config['region'] !== '' ? (string) $config['region'] : 'us-east-1';
@@ -75,7 +75,7 @@ class S3Client
      *
      * @param array<string, string> $metadata Пользовательские метаданные (x-amz-meta-*).
      */
-    public function putFile($key, $path, array $metadata = [], $storageClass = '', callable $checkpoint = null, ProgressInterface $progress = null)
+    public function putFile($key, $path, array $metadata = [], $storageClass = '', ?callable $checkpoint = null, ?ProgressInterface $progress = null)
     {
         if (!is_readable($path)) {
             throw new RuntimeException('Файл недоступен для чтения: ' . $path);
@@ -190,7 +190,7 @@ class S3Client
      * @param string|null           $uploadFile Файл-источник для PUT.
      * @param resource|null         $sink       Куда писать тело ответа.
      */
-    private function request($method, $key, array $query, array $headers, $payloadHash, $uploadFile = null, $sink = null, callable $checkpoint = null, ProgressInterface $progress = null)
+    private function request($method, $key, array $query, array $headers, $payloadHash, $uploadFile = null, $sink = null, ?callable $checkpoint = null, ?ProgressInterface $progress = null)
     {
         $credentials = $this->credentials->resolve();
         $timestamp = gmdate('Ymd\THis\Z');
@@ -266,7 +266,7 @@ class S3Client
      * @param string|null        $uploadFile
      * @param resource|null      $sink
      */
-    protected function send($method, $url, array $headers, $uploadFile, $sink, callable $checkpoint = null, ProgressInterface $progress = null)
+    protected function send($method, $url, array $headers, $uploadFile, $sink, ?callable $checkpoint = null, ?ProgressInterface $progress = null)
     {
         if (!function_exists('curl_init')) {
             throw new RuntimeException('Для работы с S3 нужен модуль curl.');
@@ -351,7 +351,7 @@ class S3Client
         return is_string($body) ? $body : '';
     }
 
-    private function hashFile($path, callable $checkpoint = null)
+    private function hashFile($path, ?callable $checkpoint = null)
     {
         $handle = fopen($path, 'rb');
         if ($handle === false) {

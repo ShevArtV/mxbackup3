@@ -105,7 +105,7 @@ final class Connection
      * @param callable|null $failed Как понять, что результат — неудача; по умолчанию строгое `false`.
      * @return mixed Результат работы.
      */
-    public function run(callable $work, callable $failed = null)
+    public function run(callable $work, ?callable $failed = null)
     {
         $this->lastTouch = microtime(true);
         try {

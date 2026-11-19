@@ -32,7 +32,7 @@ interface RemoteStorageInterface
      * @param ProgressInterface|null $progress Тикает отправленными байтами.
      * @return string Полный адрес объекта в хранилище.
      */
-    public function upload($path, $name, array $metadata = [], callable $checkpoint = null, ProgressInterface $progress = null);
+    public function upload($path, $name, array $metadata = [], ?callable $checkpoint = null, ?ProgressInterface $progress = null);
 
     /**
      * Скачать архив в локальный файл.

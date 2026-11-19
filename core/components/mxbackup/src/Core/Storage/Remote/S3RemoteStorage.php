@@ -22,7 +22,7 @@ final class S3RemoteStorage implements RemoteStorageInterface
     /** @var string */
     private $storageClass;
 
-    public function __construct(array $config, S3Client $client = null)
+    public function __construct(array $config, ?S3Client $client = null)
     {
         $this->bucket = isset($config['bucket']) ? (string) $config['bucket'] : '';
         $prefix = isset($config['prefix']) ? trim((string) $config['prefix'], '/') : '';
@@ -36,7 +36,7 @@ final class S3RemoteStorage implements RemoteStorageInterface
         return 's3://' . $this->bucket . '/' . $this->prefix;
     }
 
-    public function upload($path, $name, array $metadata = [], callable $checkpoint = null, ProgressInterface $progress = null)
+    public function upload($path, $name, array $metadata = [], ?callable $checkpoint = null, ?ProgressInterface $progress = null)
     {
         $key = $this->prefix . $name;
         $this->client->putFile($key, $path, $metadata, $this->storageClass, $checkpoint, $progress);
